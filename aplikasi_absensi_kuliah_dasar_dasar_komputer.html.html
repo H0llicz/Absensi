@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Kuliah Dasar-Dasar Komputer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <header class="bg-indigo-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white p-1.5 rounded-xl shadow-sm flex items-center justify-center overflow-hidden">
+                    <canvas id="logo-canvas" class="w-10 h-10 object-contain"></canvas>
+                    <img id="source-logo" src="https://lh3.googleusercontent.com/d/1jAryM76uuSGhWjdMGBgkHTvX3XUjX2_Y" alt="Logo STISIPOL" class="hidden" crossorigin="anonymous">
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold">Mata Kuliah Dasar - Dasar Komputer</h1>
+                    <p class="text-xs text-indigo-200">STISIPOL Yaleka Maro Merauke - Absensi Kuliah</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="switchTab('form')" id="btn-tab-form" class="px-4 py-2 text-sm font-medium rounded-lg bg-white text-indigo-600 shadow transition flex items-center gap-2">
+                    <i class="fa-solid fa-user-check"></i> Form Hadir
+                </button>
+                <button onclick="openAdminModal()" id="btn-tab-admin" class="px-4 py-2 text-sm font-medium rounded-lg bg-indigo-700 text-indigo-100 hover:bg-indigo-800 transition flex items-center gap-2">
+                    <i class="fa-solid fa-lock"></i> Panel Dosen
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl w-full mx-auto p-4 sm:p-6 my-6 flex-grow">
+
+        <!-- Admin Login Modal -->
+        <div id="admin-login-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center transform transition-all">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-1">Login Panel Dosen</h3>
+                <p class="text-xs text-slate-500 mb-4">Masukkan password admin untuk mengakses rekapitulasi & pengaturan.</p>
+                
+                <form onsubmit="handleAdminLogin(event)" class="space-y-4 text-left">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Password Dosen</label>
+                        <input type="password" id="admin-password" placeholder="Masukkan password..." required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition outline-none text-sm">
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                        <button type="button" onclick="closeAdminModal()" class="w-1/2 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition text-sm">Batal</button>
+                        <button type="submit" class="w-1/2 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition text-sm">Masuk</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Custom Notification Modal -->
+        <div id="custom-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center transform transition-all">
+                <div id="modal-icon" class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center text-2xl"></div>
+                <h3 id="modal-title" class="text-lg font-bold text-slate-900 mb-2"></h3>
+                <p id="modal-message" class="text-sm text-slate-600 mb-6"></p>
+                <button onclick="closeModal()" class="w-full py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition">Tutup</button>
+            </div>
+        </div>
+
+        <!-- TAB 1: FORM ABSENSI MAHASISWA -->
+        <section id="section-form" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+            <div class="mb-6 border-b border-slate-100 pb-4">
+                <span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-semibold uppercase tracking-wider inline-block mb-2">Mata Kuliah Dasar - Dasar Komputer</span>
+                <h2 class="text-xl font-bold text-slate-900">Form Kehadiran Mahasiswa</h2>
+                <p class="text-sm text-slate-500">Silakan isi data diri Anda untuk melakukan absensi kuliah hari ini.</p>
+            </div>
+
+            <form id="attendance-form" onsubmit="submitAttendance(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Pertemuan Ke-</label>
+                    <select id="pertemuan" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition outline-none">
+                        <option value="">-- Pilih Pertemuan Kuliah --</option>
+                        <option value="Pertemuan 1: Pengenalan Hardware & Software">Pertemuan 1: Pengenalan Hardware & Software</option>
+                        <option value="Pertemuan 2: Sistem Bilangan & Logika Komputer">Pertemuan 2: Sistem Bilangan & Logika Komputer</option>
+                        <option value="Pertemuan 3: Arsitektur & Organisasi Komputer">Pertemuan 3: Arsitektur & Organisasi Komputer</option>
+                        <option value="Pertemuan 4: Sistem Operasi Dasar">Pertemuan 4: Sistem Operasi Dasar</option>
+                        <option value="Pertemuan 5: Algoritma & Pemrograman Dasar">Pertemuan 5: Algoritma & Pemrograman Dasar</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Nama Lengkap</label>
+                        <input type="text" id="nama" placeholder="cth. Budi Santoso" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">NIM (Nomor Induk Mahasiswa)</label>
+                        <input type="text" id="nim" placeholder="cth. 2023010001" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Status Kehadiran</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="border border-slate-200 rounded-xl p-3 flex items-center justify-center gap-2 cursor-pointer hover:border-indigo-500 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50 transition">
+                            <input type="radio" name="status" value="Hadir" checked class="text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-slate-700">Hadir</span>
+                        </label>
+                        <label class="border border-slate-200 rounded-xl p-3 flex items-center justify-center gap-2 cursor-pointer hover:border-indigo-500 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50 transition">
+                            <input type="radio" name="status" value="Izin" class="text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-slate-700">Izin</span>
+                        </label>
+                        <label class="border border-slate-200 rounded-xl p-3 flex items-center justify-center gap-2 cursor-pointer hover:border-indigo-500 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50 transition">
+                            <input type="radio" name="status" value="Sakit" class="text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-slate-700">Sakit</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" id="btn-submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-lg shadow-indigo-600/20 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim Absensi
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- TAB 2: PANEL DOSEN / ADMIN -->
+        <section id="section-admin" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield text-indigo-600"></i> Mode Dosen / Admin Aktif
+                    </h2>
+                    <p class="text-xs text-slate-500">Anda memiliki hak akses untuk mengelola data absensi.</p>
+                </div>
+                <button onclick="adminLogout()" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-medium text-xs rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-right-from-bracket"></i> Keluar Admin
+                </button>
+            </div>
+
+            <!-- Pengaturan Batas Waktu Absen -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <h2 class="text-xl font-bold text-slate-900 mb-1"><i class="fa-solid fa-clock text-indigo-600 mr-2"></i>Pengaturan Batas Waktu Absen</h2>
+                <p class="text-sm text-slate-500 mb-4">Tentukan batas waktu (jam) terakhir mahasiswa dapat melakukan absensi pada hari ini.</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Batas Jam Absen Berakhir (Hari Ini)</label>
+                        <input type="time" id="deadline-time" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition outline-none text-sm font-medium">
+                    </div>
+                    <div>
+                        <button onclick="saveDeadlineTime()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-floppy-disk"></i> Simpan Batas Waktu
+                        </button>
+                    </div>
+                </div>
+                <div id="deadline-status-info" class="mt-3 text-xs text-slate-500">
+                    <!-- Status batas waktu akan ditampilkan di sini -->
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <h2 class="text-xl font-bold text-slate-900 mb-1">Pengaturan Google Sheets API</h2>
+                <p class="text-sm text-slate-500 mb-4">Masukkan URL Web App Google Apps Script Anda agar data tersimpan otomatis di Google Sheets.</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Google Apps Script Web App URL</label>
+                        <div class="flex gap-2">
+                            <input type="url" id="script-url" placeholder="https://script.google.com/macros/s/.../exec" class="flex-grow px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white transition outline-none text-sm">
+                            <button onclick="saveScriptUrl()" class="px-5 py-2.5 bg-slate-800 text-white font-medium text-sm rounded-xl hover:bg-slate-900 transition">Simpan URL</button>
+                        </div>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 leading-relaxed">
+                        <p class="font-bold mb-1"><i class="fa-solid fa-circle-info"></i> Petunjuk Google Apps Script:</p>
+                        1. Buat Google Sheet baru dengan kolom: <code class="bg-amber-100 px-1 py-0.5 rounded font-mono">Timestamp, Pertemuan, Nama, NIM, Status</code>.<br>
+                        2. Buka <em>Extensions > Apps Script</em>, paste kode backend Google Apps Script yang tersedia di bawah, lalu Deploy sebagai Web App (akses: <em>Anyone</em>).<br>
+                        3. Salin URL Web App dan paste di kolom atas. Jika kosong, data akan disimpan secara lokal di browser.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rekapitulasi Data -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 overflow-hidden">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Rekapitulasi Kehadiran</h2>
+                        <p class="text-sm text-slate-500">Daftar mahasiswa yang sudah melakukan absensi.</p>
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button onclick="loadAttendanceData()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-xl transition flex items-center gap-2">
+                            <i class="fa-solid fa-rotate"></i> Muat Ulang
+                        </button>
+                        <button onclick="exportToCSV()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm rounded-xl transition flex items-center gap-2">
+                            <i class="fa-solid fa-file-excel"></i> Ekspor CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 text-xs uppercase tracking-wider font-semibold">
+                                <th class="p-3 rounded-l-xl">Waktu</th>
+                                <th class="p-3">Pertemuan</th>
+                                <th class="p-3">Nama</th>
+                                <th class="p-3">NIM</th>
+                                <th class="p-3 rounded-r-xl">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendance-table-body" class="divide-y divide-slate-100 text-sm">
+                            <!-- Data akan dimuat melalui JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="table-empty-state" class="text-center py-12 text-slate-400">
+                    <i class="fa-solid fa-folder-open text-4xl mb-3"></i>
+                    <p class="text-sm">Belum ada data absensi tercatat.</p>
+                </div>
+            </div>
+
+            <!-- Panel Bantuan Kode Apps Script -->
+            <div class="bg-slate-900 text-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 class="text-base font-bold text-white mb-2"><i class="fa-solid fa-code text-indigo-400"></i> Kode Google Apps Script (Backend)</h3>
+                <p class="text-xs text-slate-400 mb-3">Salin kode di bawah ini ke editor Google Apps Script Anda:</p>
+                <div class="relative">
+                    <pre class="bg-slate-950 p-4 rounded-xl text-xs font-mono overflow-x-auto text-emerald-400 select-all border border-slate-800"><code>function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  
+  sheet.appendRow([
+    new Date(),
+    data.pertemuan,
+    data.nama,
+    data.nim,
+    data.status
+  ]);
+  
+  return ContentService.createTextOutput(JSON.stringify({"result": "success"}))
+         .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doGet(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var rows = sheet.getDataRange().getValues();
+  var headers = rows.shift();
+  
+  var result = rows.map(function(row) {
+    return {
+      timestamp: row[0],
+      pertemuan: row[1],
+      nama: row[2],
+      nim: row[3],
+      status: row[4]
+    };
+  });
+  
+  return ContentService.createTextOutput(JSON.stringify(result))
+         .setMimeType(ContentService.MimeType.JSON);
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        <p>&copy; 2026 STISIPOL Yaleka Maro Merauke - Mata Kuliah Dasar - Dasar Komputer. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Tab Switcher
+        function switchTab(tab) {
+            const formSec = document.getElementById('section-form');
+            const adminSec = document.getElementById('section-admin');
+            const btnForm = document.getElementById('btn-tab-form');
+            const btnAdmin = document.getElementById('btn-tab-admin');
+
+            if (tab === 'form') {
+                formSec.classList.remove('hidden');
+                adminSec.classList.add('hidden');
+                btnForm.className = "px-4 py-2 text-sm font-medium rounded-lg bg-white text-indigo-600 shadow transition flex items-center gap-2";
+                btnAdmin.className = "px-4 py-2 text-sm font-medium rounded-lg bg-indigo-700 text-indigo-100 hover:bg-indigo-800 transition flex items-center gap-2";
+                checkAttendanceDeadline();
+            } else {
+                // Periksa apakah sudah login admin sebelumnya dalam sesi
+                if (sessionStorage.getItem('ddk_admin_logged') === 'true') {
+                    formSec.classList.add('hidden');
+                    adminSec.classList.remove('hidden');
+                    btnAdmin.className = "px-4 py-2 text-sm font-medium rounded-lg bg-white text-indigo-600 shadow transition flex items-center gap-2";
+                    btnForm.className = "px-4 py-2 text-sm font-medium rounded-lg bg-indigo-700 text-indigo-100 hover:bg-indigo-800 transition flex items-center gap-2";
+                    loadAttendanceData();
+                    initDeadlineSettings();
+                } else {
+                    openAdminModal();
+                }
+            }
+        }
+
+        // Admin Login Handlers
+        function openAdminModal() {
+            document.getElementById('admin-login-modal').classList.remove('hidden');
+            document.getElementById('admin-password').value = '';
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-login-modal').classList.add('hidden');
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const pass = document.getElementById('admin-password').value;
+            // Password baru dosen sesuai permintaan
+            if (pass === 'holic14maret') {
+                sessionStorage.setItem('ddk_admin_logged', 'true');
+                closeAdminModal();
+                switchTab('admin');
+                showModal("Login Berhasil", "Selamat datang di Panel Dosen Dasar-Dasar Komputer.");
+            } else {
+                showModal("Login Gagal", "Password yang Anda masukkan salah.", false);
+            }
+        }
+
+        function adminLogout() {
+            sessionStorage.removeItem('ddk_admin_logged');
+            switchTab('form');
+            showModal("Logout", "Anda telah keluar dari Panel Dosen.");
+        }
+
+        // Modal Handler
+        function showModal(title, message, isSuccess = true) {
+            const modal = document.getElementById('custom-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            const modalIcon = document.getElementById('modal-icon');
+
+            modalTitle.innerText = title;
+            modalMessage.innerText = message;
+
+            if (isSuccess) {
+                modalIcon.className = "w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl";
+                modalIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                modalIcon.className = "w-16 h-16 mx-auto mb-4 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-2xl";
+                modalIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+
+        // Local Storage / Script URL management
+        function getScriptUrl() {
+            // Default URL Google Apps Script yang baru sesuai permintaan
+            const defaultUrl = 'https://script.google.com/macros/s/AKfycbwgIX8tKJlGnvyefeox8a11eOSeAksMLm_-EauY0zLzhwaVlf-LjdRpeIlDZdMubRkU/exec';
+            let url = localStorage.getItem('ddk_script_url') || defaultUrl;
+            url = url.trim();
+            if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://script.google.com/macros/s/' + url + '/exec';
+            }
+            return url;
+        }
+
+        function saveScriptUrl() {
+            let url = document.getElementById('script-url').value.trim();
+            if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://script.google.com/macros/s/' + url + '/exec';
+                document.getElementById('script-url').value = url;
+            }
+            localStorage.setItem('ddk_script_url', url);
+            showModal("Berhasil", "URL Google Apps Script berhasil disimpan.");
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUrl = getScriptUrl();
+            document.getElementById('script-url').value = savedUrl;
+            checkAttendanceDeadline();
+            initDeadlineSettings();
+            processLogoTransparency();
+        });
+
+        // Function to remove white background from logo using Canvas
+        function processLogoTransparency() {
+            const img = document.getElementById('source-logo');
+            const canvas = document.getElementById('logo-canvas');
+            if (!img || !canvas) return;
+
+            img.onload = function() {
+                canvas.width = img.naturalWidth || 100;
+                canvas.height = img.naturalHeight || 100;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+
+                let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                let data = imgData.data;
+
+                // Loop through pixels and make white/near-white transparent
+                for (let i = 0; i < data.length; i += 4) {
+                    let r = data[i], g = data[i + 1], b = data[i + 2];
+                    // If pixel is white or very light background
+                    if (r > 220 && g > 220 && b > 220) {
+                        data[i + 3] = 0; // Set alpha to 0 (transparent)
+                    }
+                }
+                ctx.putImageData(imgData, 0, 0);
+            };
+
+            // Trigger load if already cached
+            if (img.complete) {
+                img.onload();
+            }
+        }
+
+        // Deadline Time Management Functions
+        function getTodayDateKey() {
+            const d = new Date();
+            return `ddk_deadline_${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+        }
+
+        function saveDeadlineTime() {
+            const timeVal = document.getElementById('deadline-time').value;
+            if (!timeVal) {
+                showModal("Peringatan", "Harap pilih waktu batas absen terlebih dahulu.", false);
+                return;
+            }
+            const key = getTodayDateKey();
+            localStorage.setItem(key, timeVal);
+            showModal("Berhasil", "Batas waktu absen hari ini berhasil disimpan: " + timeVal);
+            checkAttendanceDeadline();
+            initDeadlineSettings();
+        }
+
+        function initDeadlineSettings() {
+            const key = getTodayDateKey();
+            const savedTime = localStorage.getItem(key) || "23:59";
+            const inputEl = document.getElementById('deadline-time');
+            if (inputEl) {
+                inputEl.value = savedTime;
+            }
+            const infoEl = document.getElementById('deadline-status-info');
+            if (infoEl) {
+                infoEl.innerHTML = `<i class="fa-solid fa-circle-info text-indigo-500 mr-1"></i> Batas absen aktif saat ini sampai jam <strong>${savedTime}</strong> WIT/WIB hari ini.`;
+            }
+        }
+
+        function checkAttendanceDeadline() {
+            const key = getTodayDateKey();
+            const savedTime = localStorage.getItem(key);
+            if (!savedTime) return; // Jika tidak diset, biarkan terbuka
+
+            const now = new Date();
+            const [targetHour, targetMinute] = savedTime.split(':').map(Number);
+            
+            const targetDate = new Date();
+            targetDate.setHours(targetHour, targetMinute, 0, 0);
+
+            const formSec = document.getElementById('section-form');
+            if (now > targetDate) {
+                // Waktu sudah lewat
+                const submitBtn = document.getElementById('btn-submit');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.className = "w-full py-3 bg-slate-300 text-slate-500 font-medium rounded-xl cursor-not-allowed flex items-center justify-center gap-2";
+                    submitBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Waktu Absensi Telah Ditutup';
+                }
+                
+                // Tambahkan banner informasi penutupan jika belum ada
+                let closedBanner = document.getElementById('deadline-closed-banner');
+                if (!closedBanner && formSec) {
+                    closedBanner = document.createElement('div');
+                    closedBanner.id = 'deadline-closed-banner';
+                    closedBanner.className = 'mb-4 p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-sm flex items-center gap-3';
+                    closedBanner.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-lg text-rose-600"></i><div><strong>Absensi Ditutup:</strong> Batas waktu pengisian absensi kuliah hari ini (${savedTime}) telah berakhir.</div>`;
+                    formSec.querySelector('form').prepend(closedBanner);
+                }
+            }
+        }
+
+        // Submit Attendance
+        async function submitAttendance(e) {
+            e.preventDefault();
+            
+            // Periksa ulang deadline sebelum submit
+            const key = getTodayDateKey();
+            const savedTime = localStorage.getItem(key);
+            if (savedTime) {
+                const now = new Date();
+                const [targetHour, targetMinute] = savedTime.split(':').map(Number);
+                const targetDate = new Date();
+                targetDate.setHours(targetHour, targetMinute, 0, 0);
+                if (now > targetDate) {
+                    showModal("Waktu Habis", "Maaf, batas waktu absensi hari ini telah berakhir pada pukul " + savedTime, false);
+                    return;
+                }
+            }
+
+            const btnSubmit = document.getElementById('btn-submit');
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim...';
+
+            const payload = {
+                pertemuan: document.getElementById('pertemuan').value,
+                nama: document.getElementById('nama').value,
+                nim: document.getElementById('nim').value,
+                status: document.querySelector('input[name="status"]:checked').value
+            };
+
+            const scriptUrl = getScriptUrl();
+
+            if (scriptUrl) {
+                try {
+                    // Validasi URL sebelum melakukan fetch untuk menghindari error parse URL
+                    new URL(scriptUrl);
+
+                    // Send via CORS mode / no-cors if needed for Google Apps Script
+                    await fetch(scriptUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    // Simpan juga di localStorage sebagai cadangan lokal
+                    saveLocalFallback(payload);
+
+                    showModal("Absensi Berhasil!", "Kehadiran Anda untuk mata kuliah Dasar-Dasar Komputer telah tercatat.");
+                    document.getElementById('attendance-form').reset();
+                } catch (err) {
+                    console.error("Fetch URL Error:", err);
+                    showModal("Gagal Mengirim", "Format URL Google Apps Script tidak valid atau terjadi kesalahan koneksi. Harap periksa kembali URL di panel dosen.", false);
+                }
+            } else {
+                // Mode lokal jika URL belum diset dosen
+                saveLocalFallback(payload);
+                showModal("Absensi Tersimpan Lokal", "URL Google Sheets belum disetel dosen. Data disimpan sementara di browser.");
+                document.getElementById('attendance-form').reset();
+            }
+
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Absensi';
+        }
+
+        function saveLocalFallback(payload) {
+            const data = JSON.parse(localStorage.getItem('ddk_local_attendance') || '[]');
+            data.push({
+                timestamp: new Date().toLocaleString(),
+                pertemuan: payload.pertemuan,
+                nama: payload.nama,
+                nim: payload.nim,
+                status: payload.status
+            });
+            localStorage.setItem('ddk_local_attendance', JSON.stringify(data));
+        }
+
+        // Load Data for Admin Panel
+        async function loadAttendanceData() {
+            const scriptUrl = getScriptUrl();
+            const tbody = document.getElementById('attendance-table-body');
+            const emptyState = document.getElementById('table-empty-state');
+            tbody.innerHTML = '';
+
+            let records = [];
+
+            if (scriptUrl) {
+                try {
+                    const response = await fetch(scriptUrl);
+                    records = await response.json();
+                } catch (err) {
+                    console.warn("Gagal mengambil data dari Google Sheets, memuat data lokal...", err);
+                    records = JSON.parse(localStorage.getItem('ddk_local_attendance') || '[]');
+                }
+            } else {
+                records = JSON.parse(localStorage.getItem('ddk_local_attendance') || '[]');
+            }
+
+            if (records.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            records.forEach(row => {
+                let badgeColor = "bg-emerald-100 text-emerald-800";
+                if (row.status === 'Izin') badgeColor = "bg-sky-100 text-sky-800";
+                if (row.status === 'Sakit') badgeColor = "bg-amber-100 text-amber-800";
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="p-3 text-xs text-slate-500">${new Date(row.timestamp).toLocaleString()}</td>
+                    <td class="p-3 font-medium text-slate-700">${row.pertemuan}</td>
+                    <td class="p-3 font-semibold text-slate-900">${row.nama}</td>
+                    <td class="p-3 font-mono text-slate-600">${row.nim}</td>
+                    <td class="p-3"><span class="px-2.5 py-1 text-xs font-medium rounded-full ${badgeColor}">${row.status}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            const rows = [];
+            const trs = document.querySelectorAll('#attendance-table-body tr');
+            
+            if (trs.length === 0) {
+                showModal("Peringatan", "Tidak ada data untuk diekspor.", false);
+                return;
+            }
+
+            rows.push(["Timestamp", "Pertemuan", "Nama", "NIM", "Status"]);
+
+            trs.forEach(tr => {
+                const tds = tr.querySelectorAll('td');
+                rows.push([
+                    tds[0].innerText,
+                    tds[1].innerText,
+                    tds[2].innerText,
+                    tds[3].innerText,
+                    tds[4].innerText
+                ]);
+            });
+
+            let csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "rekap_absensi_dasar_komputer.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
